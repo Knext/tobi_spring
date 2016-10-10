@@ -15,8 +15,15 @@ import com.tobi.spring.dao.dbconn.ISimpleConnectionMaker;
 import com.tobi.spring.dao.dbconn.SimpleConnectionMaker;
 
 public class UserDao {
+
 	private ISimpleConnectionMaker conn;
 	private DataSource dataSource;
+    private JdbcContext jdbcContext;
+
+    //DI
+    public void setJdbcContext(JdbcContext jdbcContext) {
+        this.jdbcContext = jdbcContext;
+    }
 	
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
@@ -31,9 +38,19 @@ public class UserDao {
 		conn = simpleConn;
 	}
 
-	public void add(User user) throws ClassNotFoundException, SQLException {
-		StatementStrategy stmt = new AddStatement(user);
-		jdbcContextWithStatementStrategy(stmt);
+	public void add(final User user) throws ClassNotFoundException, SQLException {
+        //Inner Class to handle SQL Query
+		this.jdbcContext.workWithStatementStrategy(new StatementStrategy {
+			public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+				PreparedStatement ps = c.prepareStatement(
+						"insert into users(id, name, password) values(?,?,?)");
+				ps.setString(1, user.getId());
+				ps.setString(2, user.getName());
+				ps.setString(3, user.getPassword());
+				return ps;
+			}
+		}
+		);
 	}
 	
 	public User get(String id) throws ClassNotFoundException, SQLException {
@@ -65,35 +82,16 @@ public class UserDao {
 	}
 	
 	public void deleteAll() throws SQLException {
-		StatementStrategy stmt = new DeleteAllStatement();
-		jdbcContextWithStatementStrategy(stmt);
+		this.jdbcContext.workWithStatementStrategy(new StatementStrategy {
+            public PreparedStatement makePreparedStatement (Connection c) throws SQLException {
+                // TODO Auto-generated method stub
+                return c.prepareStatement("delete from users");
+            }
+        }
+        );
 	}
 
-	private void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
-		Connection c = null;
-		PreparedStatement ps = null;
-		try {
-			c = dataSource.getConnection();
-			ps = stmt.makePreparedStatement(c);
-			ps.executeUpdate();
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if (ps != null) {
-				try {
-					ps.close();
-				} catch (SQLException e) {
-				}
-			}
-			if (c != null) {
-				try {
-					c.close();
-				} catch (SQLException e) {
-				}
-			}
-		}
-	}
-	
+
 	public int getCount() throws SQLException {
 		Connection c  = null;
 		PreparedStatement ps = null;
