@@ -4,29 +4,39 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.datasource.SimpleDriverDataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.RowMapper;
 
-import com.tobi.spring.dao.dbconn.ISimpleConnectionMaker;
-import com.tobi.spring.dao.dbconn.SimpleConnectionMaker;
 
 public class UserDao {
 
-	private ISimpleConnectionMaker conn;
-	private DataSource dataSource;
-    private JdbcContext jdbcContext;
+    private JdbcTemplate jdbcTemplate;
+    private RowMapper<User> userMapper = new RowMapper<User>() {
+			@Override
+			public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+				// TODO Auto-generated method stub
+				User user = new User();
+				user.setId(rs.getString("id"));
+				user.setName(rs.getString("name"));
+				user.setPassword(rs.getString("password"));
+				return user;
+			}
+    };
 
     //DI
+    /*
     public void setJdbcContext(JdbcContext jdbcContext) {
         this.jdbcContext = jdbcContext;
     }
+    */
 	
 	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource); // JDBC »ý¼º(IOC)
 	}
 	
 	/*public UserDao(ISimpleConnectionMaker simpleConn) {
@@ -34,13 +44,17 @@ public class UserDao {
 		conn = simpleConn;
 	}*/
 
-	public void setConnectionMaker(ISimpleConnectionMaker simpleConn) {
-		conn = simpleConn;
-	}
+//	public void setConnectionMaker(ISimpleConnectionMaker simpleConn) {
+//		conn = simpleConn;
+//	}
 
 	public void add(final User user) throws ClassNotFoundException, SQLException {
+		jdbcTemplate.update("insert into users(id, name, password) values(?,?,?)",
+				user.getId(), user.getName(), user.getPassword());
+
         //Inner Class to handle SQL Query
-		this.jdbcContext.workWithStatementStrategy(new StatementStrategy {
+		/*
+		this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
 			public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
 				PreparedStatement ps = c.prepareStatement(
 						"insert into users(id, name, password) values(?,?,?)");
@@ -51,9 +65,14 @@ public class UserDao {
 			}
 		}
 		);
+		*/
 	}
 	
-	public User get(String id) throws ClassNotFoundException, SQLException {
+	public User get(String id) {
+		return jdbcTemplate.queryForObject("select * from users where id = ?",
+				new Object[]{id},
+				userMapper);
+		/*
 //		Connection c = conn.makeNewConnection();
 		Connection c = dataSource.getConnection();
 		PreparedStatement ps = c.prepareStatement(
@@ -79,20 +98,43 @@ public class UserDao {
 		}
 		
 		return user;
+		*/
 	}
 	
 	public void deleteAll() throws SQLException {
-		this.jdbcContext.workWithStatementStrategy(new StatementStrategy {
-            public PreparedStatement makePreparedStatement (Connection c) throws SQLException {
-                // TODO Auto-generated method stub
-                return c.prepareStatement("delete from users");
-            }
-        }
-        );
+//		jdbcTemplate.update("delete from users");
+		jdbcTemplate.update( new PreparedStatementCreator() {
+			@Override
+			public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
+				// TODO Auto-generated method stub
+				return conn.prepareStatement("delete from users");
+			}
+		});
 	}
 
-
+	
 	public int getCount() throws SQLException {
+		return jdbcTemplate.queryForInt("select count(*) from users");
+		/*
+		jdbcTemplate.query(new PreparedStatementCreator() {
+			@Override
+			public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
+				// TODO Auto-generated method stub
+				return conn.prepareStatement("select count(*) from users");
+			}
+		}, new ResultSetExtractor<Integer>() {
+			@Override
+			public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+				// TODO Auto-generated method stub
+				rs.next();
+				return rs.getInt(1);
+			}
+		});
+		*/
+
+		/*
+		//jdbcContext.executeSql("select count(*) from users");
+
 		Connection c  = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -124,6 +166,12 @@ public class UserDao {
 				}
 			}
 		}
+		*/
+	}
+
+	public List<User> getAll() {
+		return jdbcTemplate.query("select * from users order by id",
+				userMapper);
 	}
 
 	

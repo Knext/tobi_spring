@@ -12,7 +12,7 @@ public class CountingDaoFactory {
 	@Bean
 	public UserDao userDao() {
 		UserDao dao = new UserDao();
-		dao.setConnectionMaker(connectionMaker());
+//		dao.setConnectionMaker(connectionMaker());
 		return dao;
 	}
 	

@@ -11,9 +11,9 @@
 	</bean>
 	<bean id="userDao" class="com.tobi.spring.dao.UserDao">
 		<property name="dataSource" ref="dataSource"></property>
-		<property name="jdbcContext" ref="jdbcContext"></property>
+		<!-- property name="jdbcContext" ref="jdbcContext"></property-->
 	</bean>
-	<bean id="jdbcContext" class="com.tobi.spring.dao.JdbcContext">
+	<!--  bean id="jdbcContext" class="com.tobi.spring.dao.JdbcContext">
 		<property name="dataSource" ref="dataSource"></property>
-	</bean>
+	</bean-->
 </beans>
