@@ -4,17 +4,18 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
+import com.tobi.spring.dao.Level;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
-import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -40,9 +41,9 @@ public class DaoTest {
 	@Before
 	public void setup() {
 //		dao = context.getBean("userDao", UserDaoJdbc.class);
-		user1 = new User("a", "aaa", "aaaa");
-		user2 = new User("b", "bbb", "bbbb");
-		user3 = new User("c", "ccc", "cccc");
+		user1 = new User("a", "aaa", "aaaa", Level.BASIC, 1, 0);
+		user2 = new User("b", "bbb", "bbbb", Level.SILVER, 55, 10);
+		user3 = new User("c", "ccc", "cccc", Level.GOLD, 100, 40);
 	}
 
 	@Test
@@ -114,7 +115,6 @@ public class DaoTest {
 		assertThat(dao.getCount(), is(0));
 		
 		dao.get("unknown id");
-		
 	}
 	
 	@Test
@@ -141,8 +141,22 @@ public class DaoTest {
 		checkSameUser(user1, users3.get(0));
 		checkSameUser(user2, users3.get(1));
 		checkSameUser(user3, users3.get(2));
-		
-		
+	}
+
+	@Test
+	public void update() {
+		dao.deleteAll();
+		dao.add(user1);
+
+		user1.setName("test_update");
+		user1.setPassword("spring");
+		user1.setLevel(Level.GOLD);
+		user1.setLogin(1000);
+        user1.setRecommend(999);
+		dao.update(user1);
+
+		User user1update = dao.get(user1.getId());
+		checkSameUser(user1, user1update);
 	}
 
 	private void checkSameUser(User user1, User user2) {
@@ -150,5 +164,8 @@ public class DaoTest {
 		assertThat(user1.getId(), is(user2.getId()));
 		assertThat(user1.getName(), is(user2.getName()));
 		assertThat(user1.getPassword(), is(user2.getPassword()));
+		assertThat(user1.getLevel(), is(user2.getLevel()));
+		assertThat(user1.getLogin(), is(user2.getLogin()));
+		assertThat(user1.getRecommend(), is(user2.getRecommend()));
 	}
 }
