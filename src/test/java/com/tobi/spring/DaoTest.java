@@ -11,21 +11,25 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.tobi.spring.dao.User;
 import com.tobi.spring.dao.UserDao;
+import javax.sql.DataSource;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="/applicationContext.xml")
+@ContextConfiguration(locations= "/applicationContext.xml")
 public class DaoTest {
 //	@Autowired
 //	ApplicationContext context;
 	
-	@Autowired
-	UserDao dao;
+	@Autowired 	UserDao dao;
+	@Autowired 	DataSource dataSource;
 	private User user1;
 	private User user2;
 	private User user3;
@@ -35,12 +39,37 @@ public class DaoTest {
 	
 	@Before
 	public void setup() {
-//		dao = context.getBean("userDao", UserDao.class);
+//		dao = context.getBean("userDao", UserDaoJdbc.class);
 		user1 = new User("a", "aaa", "aaaa");
 		user2 = new User("b", "bbb", "bbbb");
 		user3 = new User("c", "ccc", "cccc");
 	}
 
+	@Test
+	public void sqlExceptionTranslate() {
+		dao.deleteAll();
+        /*
+		try {
+			dao.add(user1);
+			dao.add(user2);
+		} catch(DuplicateKeyException ex) {
+			SQLException sqlEx = (SQLException)	ex.getRootCause();
+			SQLExceptionTranslator set = new SQLErrorCodeSQLExceptionTranslator(this.dataSource);
+			assertThat(set.translate(null, null, sqlEx), is(DuplicateKeyException.class));
+		}
+		*/
+	}
+	@Test(expected = DataAccessException.class)
+	public void addDuplicate() throws SQLException, ClassNotFoundException {
+		dao.deleteAll();
+		assertThat(dao.getCount(), is(0));
+		dao.add(user1);
+		dao.add(user1);
+		assertThat(dao.getCount(), is(2));
+
+		dao.deleteAll();
+		assertThat(dao.getCount(), is(0));
+	}
 	@Test
 	public void addAndGet() throws SQLException, ClassNotFoundException {
 		dao.deleteAll();

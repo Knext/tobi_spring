@@ -11,7 +11,7 @@ import com.tobi.spring.dao.dbconn.SimpleConnectionMaker;
 public class CountingDaoFactory {
 	@Bean
 	public UserDao userDao() {
-		UserDao dao = new UserDao();
+		UserDao dao = new UserDaoJdbc();
 //		dao.setConnectionMaker(connectionMaker());
 		return dao;
 	}
