@@ -4,15 +4,23 @@ package com.tobi.spring.dao;
  * Created by 김영환 on 2016-10-16.
  */
 public enum Level {
-    BASIC(1), SILVER(2), GOLD(3);
-    private final int value;
+    //declare Level enum in order
+    GOLD(3, null), SILVER(2, GOLD), BASIC(1,SILVER);
 
-    Level(int value) {
+    private final int value;
+    private final Level next;
+
+    Level(int value, Level next) {
         this.value = value;
+        this.next = next;
     }
 
     public int intValue() {
         return value;
+    }
+
+    public Level nextLevel() {
+        return this.next;
     }
 
     public static Level valueOf(int value) {

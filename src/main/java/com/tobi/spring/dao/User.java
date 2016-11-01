@@ -22,6 +22,15 @@ public class User {
 		this.recommend = recommend;
 	}
 
+	public void upgradeLevel() {
+		Level nextLevel = this.level.nextLevel();
+		if (nextLevel == null) {
+			throw new IllegalStateException(this.level + " can't upgrade");
+		} else {
+			this.level = nextLevel;
+		}
+	}
+
 	public int getLogin() { return login; }
 
 	public void setLogin(int login) { this.login = login; }
