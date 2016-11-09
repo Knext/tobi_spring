@@ -13,6 +13,6 @@ import java.sql.SQLException;
 public interface UserService {
     void upgradeLevels();
     void add(User userWLevel);
-    void setUserDao(UserDao userDao);
-    void setTransactionManager(PlatformTransactionManager transactionManager);
+    //void setUserDao(UserDao userDao);
+    //void setTransactionManager(PlatformTransactionManager transactionManager);
 }

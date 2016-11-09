@@ -41,9 +41,9 @@ public class DaoTest {
 	@Before
 	public void setup() {
 //		dao = context.getBean("userDao", UserDaoJdbc.class);
-		user1 = new User("a", "aaa", "aaaa", Level.BASIC, 1, 0);
-		user2 = new User("b", "bbb", "bbbb", Level.SILVER, 55, 10);
-		user3 = new User("c", "ccc", "cccc", Level.GOLD, 100, 40);
+		user1 = new User("a", "aaa", "aaaa", Level.BASIC, 1, 0, "aaa@xxx.com");
+		user2 = new User("b", "bbb", "bbbb", Level.SILVER, 55, 10, "bbb@xxx.com");
+		user3 = new User("c", "ccc", "cccc", Level.GOLD, 100, 40,"ccc@xxx.com");
 	}
 
 	@Test
@@ -61,7 +61,7 @@ public class DaoTest {
 		*/
 	}
 	@Test(expected = DataAccessException.class)
-	public void addDuplicate() throws SQLException, ClassNotFoundException {
+	public void addDuplicate() throws SQLException {
 		dao.deleteAll();
 		assertThat(dao.getCount(), is(0));
 		dao.add(user1);
@@ -71,6 +71,7 @@ public class DaoTest {
 		dao.deleteAll();
 		assertThat(dao.getCount(), is(0));
 	}
+
 	@Test
 	public void addAndGet() throws SQLException, ClassNotFoundException {
 		dao.deleteAll();
@@ -153,6 +154,7 @@ public class DaoTest {
 		user1.setLevel(Level.GOLD);
 		user1.setLogin(1000);
         user1.setRecommend(999);
+		user1.setEmail("ddd@xxx.com");
 		dao.update(user1);
 
 		User user1update = dao.get(user1.getId());
@@ -167,5 +169,6 @@ public class DaoTest {
 		assertThat(user1.getLevel(), is(user2.getLevel()));
 		assertThat(user1.getLogin(), is(user2.getLogin()));
 		assertThat(user1.getRecommend(), is(user2.getRecommend()));
+		assertThat(user1.getEmail(), is(user2.getEmail()));
 	}
 }

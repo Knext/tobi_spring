@@ -9,15 +9,22 @@
 		<property name="username" value="root"></property>
 		<property name="password" value="123456"></property>
 	</bean>
-    <bean id="userService" class = "com.tobi.spring.service.UserServiceImpl">
-		<property name="userDao" ref="userDao"></property>
+    <bean id="userService" class = "com.tobi.spring.service.UserServiceTx">
 		<property name="transactionManager" ref="transactionManager"></property>
+		<property name="userService" ref="userServiceImpl"></property>
+	</bean>
+    <bean id="userServiceImpl" class = "com.tobi.spring.service.UserServiceImpl">
+		<property name="userDao" ref="userDao"></property>
+		<property name="mailSender" ref="mailSender"></property>
 	</bean>
 	<bean id="userDao" class="com.tobi.spring.dao.UserDaoJdbc">
 		<property name="dataSource" ref="dataSource"></property>
 		<!-- property name="jdbcContext" ref="jdbcContext"></property-->
 	</bean>
 
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="mail.server.com"/>
+	</bean>
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
